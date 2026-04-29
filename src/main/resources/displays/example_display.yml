@@ -1,0 +1,24 @@
+# 示例展示方案
+
+# 武器展示
+weapon_display:
+  name: "<item_name> <item_level>"
+  lore:
+    - "<item_type>"
+    - ""
+    - "<item_desc...>"
+    - ""
+    - "&7攻击力: &f+<damage_display>"
+    - "&7攻速: &f<speed_display>"
+    - ""
+    - "&7耐久: <durability>"
+    - ""
+    - "<item_extra...>"
+
+# 通用展示
+simple_display:
+  name: "<item_name>"
+  lore:
+    - "<item_type>"
+    - ""
+    - "<item_desc...>"

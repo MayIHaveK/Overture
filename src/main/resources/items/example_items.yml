@@ -1,0 +1,64 @@
+# 示例物品定义
+
+# 钻石剑示例
+example_sword:
+  display: weapon_display
+  icon: DIAMOND_SWORD
+  name:
+    item_name: "&b示例钻石剑"
+    item_level: "&7Lv.1"
+  lore:
+    item_type: "&9武器"
+    item_desc:
+      - "&f一把示例钻石剑"
+      - "&f用于演示 Overture 物品系统"
+  data:
+    damage: 7
+    attack-speed: 1.6
+    durability!!: 100
+  data-mapper:
+    damage_display: "{damage}"
+    speed_display: "{attack-speed}"
+    durability: "bar({durability_current}, {durability})"
+  meta:
+    attribute:
+      mainhand:
+        generic_attack_damage: "+7"
+        generic_attack_speed: "+1.6"
+    durability:
+      max: 100
+      remains: STICK
+      synchronous: true
+    unique: true
+    custom_model_data: 10001
+    shiny: true
+  event:
+    on_right_click!!: |
+      if (cooldown.check('skill', 5000)) {
+        cooldown.set('skill')
+        sendMessage('&a技能释放！')
+        item.damage(10)
+      } else {
+        sendMessage('&c技能冷却中...')
+      }
+    on_attack: |
+      item.damage(1)
+
+# 治疗药水示例
+example_potion:
+  display: simple_display
+  icon: POTION
+  name:
+    item_name: "&a治疗药水"
+  lore:
+    item_type: "&d消耗品"
+    item_desc:
+      - "&f饮用后恢复生命值"
+  meta:
+    potion:
+      - "REGENERATION,100,1"
+    custom_model_data: 10002
+  event:
+    on_consume: |
+      sendMessage('&a你感到一股暖流涌遍全身')
+      potion.give('REGENERATION', 200, 2)
