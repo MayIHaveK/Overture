@@ -42,8 +42,7 @@ object AriaRegistry {
             val stream = getStream(data)
             val amount = data.get(0).numberValue().toInt()
             if (stream != null) {
-                val dataTag = stream.overtureData
-                val current = dataTag.getInt("durability_current")
+                val current = stream.getData("durability_current")?.asInt() ?: 0
                 val newValue = (current - amount).coerceAtLeast(0)
                 stream.setData("durability_current", ItemTagData.of(newValue))
                 stream.signals.add(ItemSignal.DURABILITY_CHANGED)
@@ -59,9 +58,8 @@ object AriaRegistry {
             val stream = getStream(data)
             val amount = data.get(0).numberValue().toInt()
             if (stream != null) {
-                val dataTag = stream.overtureData
-                val current = dataTag.getInt("durability_current")
-                val max = dataTag.getInt("durability")
+                val current = stream.getData("durability_current")?.asInt() ?: 0
+                val max = stream.getData("durability")?.asInt() ?: 0
                 val newValue = (current + amount).coerceIn(0, max)
                 stream.setData("durability_current", ItemTagData.of(newValue))
                 stream.signals.add(ItemSignal.DURABILITY_CHANGED)
@@ -72,13 +70,13 @@ object AriaRegistry {
         // item.durability() — 获取当前耐久
         manager.registerStaticFunction("item", "durability") { data ->
             val stream = getStream(data)
-            NumberValue(stream?.overtureData?.getInt("durability_current")?.toDouble() ?: 0.0)
+            NumberValue(stream?.getData("durability_current")?.asInt()?.toDouble() ?: 0.0)
         }
 
         // item.maxDurability() — 获取最大耐久
         manager.registerStaticFunction("item", "maxDurability") { data ->
             val stream = getStream(data)
-            NumberValue(stream?.overtureData?.getInt("durability")?.toDouble() ?: 0.0)
+            NumberValue(stream?.getData("durability")?.asInt()?.toDouble() ?: 0.0)
         }
 
         // item.consume(n?) — 消耗物品
@@ -107,6 +105,8 @@ object AriaRegistry {
                         else -> ItemTagData.of(value.stringValue())
                     }
                     stream.setData(key, tagData)
+                    // 写入数据后自动标记需要 rebuild，确保修改被保存
+                    stream.signals.add(ItemSignal.DURABILITY_CHANGED)
                 }
                 NoneValue.NONE
             } else {
@@ -133,7 +133,10 @@ object AriaRegistry {
         manager.registerStaticFunction("item", "removeData") { data ->
             val stream = getStream(data)
             val key = data.get(0).stringValue()
-            stream?.removeData(key)
+            if (stream != null) {
+                stream.removeData(key)
+                stream.signals.add(ItemSignal.DURABILITY_CHANGED)
+            }
             NoneValue.NONE
         }
 
@@ -159,7 +162,7 @@ object AriaRegistry {
         // item.uses() — 获取剩余使用次数
         manager.registerStaticFunction("item", "uses") { data ->
             val stream = getStream(data)
-            NumberValue(stream?.overtureData?.getInt("uses")?.toDouble() ?: 0.0)
+            NumberValue(stream?.getData("uses")?.asInt()?.toDouble() ?: 0.0)
         }
 
         // item.use(n?) — 消耗使用次数，默认 1。次数耗尽时自动消耗物品
@@ -167,8 +170,7 @@ object AriaRegistry {
             val stream = getStream(data)
             val amount = if (data.argCount() > 0) data.get(0).numberValue().toInt() else 1
             if (stream != null) {
-                val dataTag = stream.overtureData
-                val current = dataTag.getInt("uses")
+                val current = stream.getData("uses")?.asInt() ?: 0
                 if (current > 0) {
                     val newValue = (current - amount).coerceAtLeast(0)
                     stream.setData("uses", ItemTagData.of(newValue))

@@ -77,31 +77,25 @@ open class ItemStream(val sourceItem: ItemStack) {
      * 设置活跃数据
      */
     fun setData(key: String, data: ItemTagData) {
-        val root = getOrCreateRoot()
-        val dataTag = root.getCompound(ItemKey.DATA)
-        dataTag.putDeep(key, data)
-        root.putCompound(ItemKey.DATA, dataTag)
-        // 确保修改传播回 sourceTag
-        sourceTag.putCompound(ItemKey.ROOT, root)
+        // 直接在 sourceTag 上通过完整路径写入，避免 getCompound 返回副本导致修改丢失
+        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
+        sourceTag.putDeep(fullPath, data)
     }
 
     /**
      * 获取活跃数据
      */
     fun getData(key: String): ItemTagData? {
-        return overtureData.getDeep(key)
+        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
+        return sourceTag.getDeep(fullPath)
     }
 
     /**
      * 删除活跃数据
      */
     fun removeData(key: String) {
-        val root = getOrCreateRoot()
-        val dataTag = root.getCompound(ItemKey.DATA)
-        dataTag.removeDeep(key)
-        root.putCompound(ItemKey.DATA, dataTag)
-        // 确保修改传播回 sourceTag
-        sourceTag.putCompound(ItemKey.ROOT, root)
+        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
+        sourceTag.removeDeep(fullPath)
     }
 
     /**

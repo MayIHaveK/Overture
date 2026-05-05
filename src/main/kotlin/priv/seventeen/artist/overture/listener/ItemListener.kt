@@ -296,6 +296,11 @@ object ItemListener {
             handleItemDestroy(player, stream, item)
             return
         }
+
+        // 先将内存中的 NBT 修改写回 sourceItem
+        // 否则新建的 ItemStreamGenerated 从 sourceItem 读取时会丢失脚本中的数据修改
+        stream.save()
+
         // 完整重构：重新构建物品（触发 Release 事件链，更新 Display）
         val itemDef = ItemManager.getItem(stream.overtureId ?: return) ?: return
         val rebuilt = itemDef.build(player, stream)
