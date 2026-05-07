@@ -77,25 +77,60 @@ open class ItemStream(val sourceItem: ItemStack) {
      * 设置活跃数据
      */
     fun setData(key: String, data: ItemTagData) {
-        // 直接在 sourceTag 上通过完整路径写入，避免 getCompound 返回副本导致修改丢失
-        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
-        sourceTag.putDeep(fullPath, data)
+        // 获取或创建 overture 根节点
+        if (!sourceTag.containsKey(ItemKey.ROOT)) {
+            sourceTag.putCompound(ItemKey.ROOT, ItemTag())
+        }
+        val root = sourceTag.getCompound(ItemKey.ROOT)
+
+        // 获取或创建 data 节点
+        if (!root.containsKey(ItemKey.DATA)) {
+            root.putCompound(ItemKey.DATA, ItemTag())
+        }
+        val dataTag = root.getCompound(ItemKey.DATA)
+
+        // 写入数据
+        if (key.contains('.')) {
+            dataTag.putDeep(key, data)
+        } else {
+            dataTag.put(key, data)
+        }
+
+        // 逐层写回确保修改传播
+        root.putCompound(ItemKey.DATA, dataTag)
+        sourceTag.putCompound(ItemKey.ROOT, root)
     }
 
     /**
      * 获取活跃数据
      */
     fun getData(key: String): ItemTagData? {
-        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
-        return sourceTag.getDeep(fullPath)
+        if (!sourceTag.containsKey(ItemKey.ROOT)) return null
+        val root = sourceTag.getCompound(ItemKey.ROOT)
+        if (!root.containsKey(ItemKey.DATA)) return null
+        val dataTag = root.getCompound(ItemKey.DATA)
+        return if (key.contains('.')) {
+            dataTag.getDeep(key)
+        } else {
+            if (dataTag.containsKey(key)) dataTag[key] else null
+        }
     }
 
     /**
      * 删除活跃数据
      */
     fun removeData(key: String) {
-        val fullPath = "${ItemKey.ROOT}.${ItemKey.DATA}.$key"
-        sourceTag.removeDeep(fullPath)
+        if (!sourceTag.containsKey(ItemKey.ROOT)) return
+        val root = sourceTag.getCompound(ItemKey.ROOT)
+        if (!root.containsKey(ItemKey.DATA)) return
+        val dataTag = root.getCompound(ItemKey.DATA)
+        if (key.contains('.')) {
+            dataTag.removeDeep(key)
+        } else {
+            dataTag.remove(key)
+        }
+        root.putCompound(ItemKey.DATA, dataTag)
+        sourceTag.putCompound(ItemKey.ROOT, root)
     }
 
     /**
