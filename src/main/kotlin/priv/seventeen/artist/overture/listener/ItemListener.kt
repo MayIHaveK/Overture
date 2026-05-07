@@ -60,7 +60,7 @@ object ItemListener {
         ActionExecutor.execute(action, event.player, stream, event, itemDef.eventVars)
 
         if (stream.signals.isNotEmpty()) {
-            rebuildItem(event.player, stream, item)
+            rebuildItem(event.player, stream)
         }
     }
 
@@ -85,7 +85,7 @@ object ItemListener {
         ActionExecutor.execute(action, event.player, stream, event, itemDef.eventVars)
 
         if (stream.signals.isNotEmpty()) {
-            rebuildItem(event.player, stream, item)
+            rebuildItem(event.player, stream)
         }
     }
 
@@ -111,7 +111,7 @@ object ItemListener {
         ActionExecutor.execute(action, player, stream, event, itemDef.eventVars)
 
         if (stream.signals.isNotEmpty()) {
-            rebuildItem(player, stream, item)
+            rebuildItem(player, stream)
         }
     }
 
@@ -126,8 +126,12 @@ object ItemListener {
         ActionExecutor.execute(action, event.player, stream, event, itemDef.eventVars)
 
         if (stream.signals.isNotEmpty() && !event.isCancelled) {
-            rebuildItem(event.player, stream, item)
-            event.itemDrop.itemStack = item
+            // Drop 场景特殊：物品已脱离背包，需要直接操作掉落物
+            stream.save()
+            val itemDef2 = ItemManager.getItem(stream.overtureId ?: return) ?: return
+            val rebuilt = itemDef2.build(event.player, stream)
+            val result = rebuilt.toItemStack(event.player)
+            event.itemDrop.itemStack = result
         }
     }
 
@@ -185,7 +189,7 @@ object ItemListener {
         ActionExecutor.execute(action, event.player, stream, event, itemDef.eventVars)
 
         if (stream.signals.isNotEmpty()) {
-            rebuildItem(event.player, stream, item)
+            rebuildItem(event.player, stream)
         }
     }
 
@@ -257,7 +261,7 @@ object ItemListener {
             if (action != null) {
                 ActionExecutor.execute(action, event.player, stream, event, itemDef.eventVars)
                 if (stream.signals.isNotEmpty()) {
-                    rebuildItem(event.player, stream, item)
+                    rebuildItem(event.player, stream)
                 }
             }
         }
@@ -290,39 +294,36 @@ object ItemListener {
         return null
     }
 
-    private fun rebuildItem(player: Player, stream: ItemStream, item: ItemStack) {
+    private fun rebuildItem(player: Player, stream: ItemStream) {
         if (stream.signals.contains(ItemSignal.DURABILITY_DESTROYED)) {
             // 物品损坏处理
-            handleItemDestroy(player, stream, item)
+            handleItemDestroy(player, stream)
             return
         }
 
-        // 先将内存中的 NBT 修改写回 sourceItem
-        // 否则新建的 ItemStreamGenerated 从 sourceItem 读取时会丢失脚本中的数据修改
+        // 1. 将脚本中的数据修改写回 sourceTag → sourceItem
         stream.save()
 
-        // 完整重构：重新构建物品（触发 Release 事件链，更新 Display）
-        // toItemStack 内部通过 saveTo 将完整 NBT（含 overture 节点）直接写入 sourceItem
-        // sourceItem 就是 item 本身，所以无需额外写回操作
-        // 注意：不能使用 item.itemMeta = result.itemMeta，因为 setItemMeta 会清除自定义 NBT
+        // 2. 完整重构：基于当前数据重新构建物品
         val itemDef = ItemManager.getItem(stream.overtureId ?: return) ?: return
         val rebuilt = itemDef.build(player, stream)
-        rebuilt.toItemStack(player)
+        val result = rebuilt.toItemStack(player)
+
+        // 3. 显式写回玩家主手（不依赖引用，确保生效）
+        player.inventory.setItemInMainHand(result)
     }
 
-    private fun handleItemDestroy(player: Player, stream: ItemStream, item: ItemStack) {
+    private fun handleItemDestroy(player: Player, stream: ItemStream) {
         val itemDef = ItemManager.getItem(stream.overtureId ?: return) ?: return
         val durabilityMeta = itemDef.metaList.filterIsInstance<MetaDurability>().firstOrNull()
 
         val remains = durabilityMeta?.getRemainsItem()
         if (remains != null) {
-            item.type = remains.type
-            item.amount = remains.amount
-            item.itemMeta = remains.itemMeta
+            player.inventory.setItemInMainHand(remains)
         } else {
             // 播放破碎效果
             player.playSound(player.location, Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f)
-            item.amount = 0
+            player.inventory.setItemInMainHand(null)
         }
     }
 }
