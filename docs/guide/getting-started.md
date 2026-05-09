@@ -1,26 +1,22 @@
 # 快速开始
 
-## 构建配置
+## 安装
 
-```kotlin
-// build.gradle.kts
-plugins {
-    id("priv.seventeen.artist.blink.gradle") version "1.1.0"
-}
+1. 从 [GitHub Releases](https://github.com/17Artist/Overture/releases) 下载最新版 `Overture-x.x.x.jar`
+2. 将 jar 文件放入服务端的 `plugins/` 目录
+3. 启动（或重启）服务器
 
-blink {
-    name.set("Overture")
-    version.set("1.0.0")
-    packageName.set("priv.seventeen.artist.overture")
-    apiVersion.set("1.21")
-    enableAsteroid.set(true)
-    enableAria.set(true)
-}
-```
+首次启动会自动在 `plugins/Overture/` 下生成默认配置与示例文件。
+
+::: tip 依赖说明
+Overture 已将 Blink 框架、Asteroid NMS 桥接、Aria 脚本引擎全部打包进单个 jar，**无需额外安装其他插件**。
+:::
+
+**支持的服务端**：Spigot / Paper / Purpur 等 Bukkit 派生端，支持 Minecraft 1.18 及以上版本。
 
 ## 文件结构
 
-插件启用后会在 `plugins/Overture/` 下生成以下目录：
+启动后会在 `plugins/Overture/` 下生成以下目录：
 
 ```
 plugins/Overture/
@@ -43,7 +39,7 @@ plugins/Overture/
 
 ## 第一个物品
 
-在 `items/` 下创建 `example.yml`：
+在 `plugins/Overture/items/` 下创建 `example.yml`：
 
 ```yaml
 my_sword:
@@ -59,7 +55,7 @@ my_sword:
     shiny: true
 ```
 
-在 `displays/` 下创建 `simple.yml`：
+在 `plugins/Overture/displays/` 下创建 `simple.yml`：
 
 ```yaml
 simple_display:
@@ -70,7 +66,7 @@ simple_display:
     - "<item_desc...>"
 ```
 
-重载插件后使用 `/ot get my_sword` 获取物品。
+执行 `/ot reload` 重载配置，然后用 `/ot get my_sword` 领取物品。
 
 ## 命令速查
 
@@ -83,3 +79,10 @@ simple_display:
 | `/ot serialize` | 序列化手持物品 |
 | `/ot info` | 查看物品信息 |
 | `/ot reload` | 重载配置 |
+
+## 下一步
+
+- [物品配置详解](./item-config) — 学习完整的物品定义格式
+- [展示方案](./display) — 掌握名称和描述的模板系统
+- [动作系统](./action) — 用 Aria 脚本实现物品的交互逻辑
+- [分组系统](./groups) — 用文件夹组织物品并定制菜单外观
