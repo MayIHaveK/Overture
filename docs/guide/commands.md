@@ -18,6 +18,7 @@
 
 - `<item>` 参数自动补全所有已注册的物品 ID
 - `[player]` 参数自动补全在线玩家名
+- `[group]` 参数自动补全所有分组路径（如 `weapons`、`armor/iron`）
 
 ## info 命令输出
 

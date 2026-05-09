@@ -28,7 +28,7 @@ object OvertureCommand {
         BlinkCommandRegistrar.register(
             bukkitPlugin,
             BlinkCommand("overture", "ot", "oi")
-                .command("list", "浏览物品列表", sender = SenderType.PLAYER) { ctx ->
+                .command("list", "浏览物品列表", args = arrayOf("?group"), sender = SenderType.PLAYER) { ctx ->
                     val group = if (ctx.size > 0) {
                         LoaderManager.getGroup(ctx.arg(0))
                     } else null
@@ -148,6 +148,7 @@ object OvertureCommand {
                 }
                 .tabComplete("item") { ItemManager.getItemIds() }
                 .tabComplete("player") { Bukkit.getOnlinePlayers().map { it.name } }
+                .tabComplete("group") { LoaderManager.getGroups().keys.toList() }
         )
     }
 }

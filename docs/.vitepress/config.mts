@@ -27,6 +27,7 @@ export default defineConfig({
             { text: '概述', link: '/guide/overview' },
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '物品配置', link: '/guide/item-config' },
+            { text: '分组系统', link: '/guide/groups' },
             { text: '展示方案', link: '/guide/display' },
             { text: '动作系统', link: '/guide/action' },
             { text: '数据映射', link: '/guide/data-mapper' },

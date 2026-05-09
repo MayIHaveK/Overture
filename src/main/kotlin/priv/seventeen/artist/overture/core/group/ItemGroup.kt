@@ -1,5 +1,6 @@
 package priv.seventeen.artist.overture.core.group
 
+import org.bukkit.Material
 import priv.seventeen.artist.overture.core.item.OvertureItem
 
 /**
@@ -7,14 +8,20 @@ import priv.seventeen.artist.overture.core.item.OvertureItem
  * 支持层级结构，文件夹即分组
  */
 class ItemGroup(
-    /** 分组名称 */
+    /** 分组名称（文件夹名） */
     val name: String,
     /** 父分组 */
     val parent: ItemGroup? = null,
     /** 层级深度 */
     val level: Int = 0,
-    /** 排序优先级 */
-    val priority: Int = 0
+    /** 排序优先级（越小越靠前） */
+    val priority: Int = 0,
+    /** 分组图标 */
+    val icon: Material = Material.CHEST,
+    /** 自定义显示名（null 时使用 name） */
+    val displayName: String? = null,
+    /** 分组描述（GUI lore） */
+    val description: List<String> = emptyList()
 ) {
 
     /** 子分组 */
@@ -23,6 +30,10 @@ class ItemGroup(
     /** 分组路径 */
     val path: String
         get() = if (parent != null) "${parent.path}/$name" else name
+
+    /** 展示名（优先 displayName，否则 name） */
+    val title: String
+        get() = displayName ?: name
 
     /**
      * 获取该分组下的所有物品
@@ -36,6 +47,19 @@ class ItemGroup(
      */
     fun getSubGroups(): List<ItemGroup> {
         return children.sortedBy { it.priority }
+    }
+
+    /**
+     * 获取从根到当前分组的路径链（面包屑）
+     */
+    fun getBreadcrumb(): List<ItemGroup> {
+        val chain = mutableListOf<ItemGroup>()
+        var current: ItemGroup? = this
+        while (current != null) {
+            chain.add(0, current)
+            current = current.parent
+        }
+        return chain
     }
 
     override fun toString(): String = "ItemGroup(path=$path)"

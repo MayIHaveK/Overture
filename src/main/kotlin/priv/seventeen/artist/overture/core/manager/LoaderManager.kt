@@ -1,11 +1,13 @@
 package priv.seventeen.artist.overture.core.manager
 
+import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
 import priv.seventeen.artist.blink.BlinkLog
 import priv.seventeen.artist.overture.api.ItemProvider
 import priv.seventeen.artist.overture.core.group.ItemGroup
 import priv.seventeen.artist.overture.core.item.OvertureItem
 import priv.seventeen.artist.overture.core.model.ItemModel
+import priv.seventeen.artist.overture.util.ColorUtil
 import java.io.File
 
 /**
@@ -73,12 +75,14 @@ object LoaderManager {
     ) {
         val files = directory.listFiles() ?: return
 
-        // 检查 __group__ 配置
+        // 读取 __group__ 配置
         val groupConfig = files.find { it.name == "__group__" || it.name == "__group__.yml" }
-        val groupPriority = groupConfig?.let {
-            val yaml = YamlConfiguration.loadConfiguration(it)
-            yaml.getInt("priority", 0)
-        } ?: 0
+        val groupYaml = groupConfig?.let { YamlConfiguration.loadConfiguration(it) }
+        val groupPriority = groupYaml?.getInt("priority", 0) ?: 0
+        val groupIconName = groupYaml?.getString("icon", "CHEST") ?: "CHEST"
+        val groupIcon = Material.matchMaterial(groupIconName.uppercase()) ?: Material.CHEST
+        val groupDisplayName = groupYaml?.getString("name")?.let { ColorUtil.colored(it) }
+        val groupLore = groupYaml?.getStringList("lore")?.map { ColorUtil.colored(it) } ?: emptyList()
 
         // 创建当前目录的分组（如果不是根目录）
         val currentGroup = if (parentGroup != null || directory.name != "items") {
@@ -86,7 +90,10 @@ object LoaderManager {
                 name = directory.name,
                 parent = parentGroup,
                 level = (parentGroup?.level ?: -1) + 1,
-                priority = groupPriority
+                priority = groupPriority,
+                icon = groupIcon,
+                displayName = groupDisplayName,
+                description = groupLore
             ).also {
                 parentGroup?.children?.add(it)
                 groups[it.path] = it

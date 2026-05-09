@@ -26,7 +26,7 @@ blink {
 plugins/Overture/
 ├── config.yml           # 主配置
 ├── items/               # 物品定义（递归扫描，文件夹 = 分组）
-│   ├── __group__.yml    # 分组配置（可选，设置 priority）
+│   ├── __group__.yml    # 分组配置（可选，详见分组系统）
 │   ├── weapons/
 │   │   └── swords.yml
 │   └── consumables.yml
@@ -36,6 +36,7 @@ plugins/Overture/
 ```
 
 - `items/` 目录递归扫描，每个文件夹自动成为一个物品分组
+- 分组支持自定义图标、显示名、描述，详见 [分组系统](./groups)
 - `displays/` 目录递归扫描所有 `.yml` 文件
 - 以 `__` 开头的文件名和键名会被跳过
 - 以 `$` 结尾的键名作为事件模型注册
