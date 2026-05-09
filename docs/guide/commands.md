@@ -29,5 +29,5 @@ ID: diamond_sword_1
 数据: {damage: 7, durability: 100, durability_current: 85}
 唯一: UUID=550e8400-e29b-41d4-a716-446655440000
   玩家: Steve
-  时间: 2024-01-15 14:30:00
+  时间: 2026-01-15 14:30:00
 ```
