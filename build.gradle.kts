@@ -14,7 +14,7 @@ blink {
     apiVersion.set("1.20")
     logPrefix.set("§b♪ §dOverture")
     depend.set(listOf())
-    softDepend.set(listOf())
+    softDepend.set(listOf("ArcartX"))
     foliaSupported.set(false)
     enableAsteroid.set(true)
     enableAria.set(true)
@@ -31,6 +31,7 @@ dependencies {
     implementation("priv.seventeen.artist.blink:blink-common:1.3.10")
     compileOnly("org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT")
     compileOnly("com.google.code.gson:gson:2.10.1")
+    compileOnly("priv.seventeen.artist.arcartx:ArcartX:2.2.0.5")
 }
 
 kotlin {

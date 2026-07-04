@@ -14,6 +14,7 @@ class OvertureConfig : BlinkConfig(bukkitPlugin, "config") {
     var update: UpdateSection = UpdateSection()
     var durability: DurabilitySection = DurabilitySection()
     var cooldown: CooldownSection = CooldownSection()
+    var rarity: RaritySection = RaritySection()
 
     class UpdateSection : BlinkSection() {
         @Comment("玩家加入时检查背包物品更新")
@@ -52,6 +53,11 @@ class OvertureConfig : BlinkConfig(bukkitPlugin, "config") {
     class CooldownSection : BlinkSection() {
         @Comment("冷却中提示消息")
         var message: String = "&c冷却中，剩余 %time% 秒"
+    }
+
+    class RaritySection : BlinkSection() {
+        @Comment("是否启用品质发光效果")
+        var enabled: Boolean = true
     }
 
     companion object {

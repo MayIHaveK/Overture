@@ -25,6 +25,7 @@ object MetaRegistry {
         register("potion") { _, value, locked -> MetaPotion(value, locked) }
         register("native") { section, _, locked -> MetaNative(section, locked) }
         register("shiny") { _, value, locked -> MetaShiny(value, locked) }
+        register("rarity") { _, value, locked -> MetaRarity(value, locked) }
     }
 
     /**

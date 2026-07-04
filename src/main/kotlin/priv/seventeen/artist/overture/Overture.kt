@@ -8,6 +8,7 @@ import priv.seventeen.artist.overture.core.action.AriaRegistry
 import priv.seventeen.artist.overture.core.manager.DisplayManager
 import priv.seventeen.artist.overture.core.manager.ItemManager
 import priv.seventeen.artist.overture.core.manager.LoaderManager
+import priv.seventeen.artist.overture.core.manager.RarityGlowManager
 import priv.seventeen.artist.overture.core.manager.YamlItemProvider
 import priv.seventeen.artist.overture.feature.ItemAsyncTick
 import priv.seventeen.artist.overture.feature.ItemDurability
@@ -37,6 +38,12 @@ object Overture {
         OvertureConfig.load()
         applyConfig()
 
+        // 清理上次非正常关闭残留的 Team，仅首次启动需要
+        RarityGlowManager.cleanupStale()
+
+        // 加载品质发光
+        RarityGlowManager.load(File(dataFolder, "rarity.yml"))
+
         // 注册默认物品提供者
         ItemManager.registerProvider(YamlItemProvider(dataFolder))
 
@@ -51,6 +58,7 @@ object Overture {
 
     @Awake(LifeCycle.DISABLE)
     fun onDisable() {
+        RarityGlowManager.cleanup()
         BlinkLog.info("Overture 已禁用")
     }
 
