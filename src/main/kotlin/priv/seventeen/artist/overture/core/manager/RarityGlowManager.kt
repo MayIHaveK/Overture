@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Item
 import org.bukkit.scoreboard.Team
 import priv.seventeen.artist.blink.BlinkLog
+import priv.seventeen.artist.blink.bukkitPlugin
 import priv.seventeen.artist.overture.core.item.ItemStream
 import java.io.File
 
@@ -53,6 +54,7 @@ object RarityGlowManager {
         }
 
         reload(tiers)
+        rescanExistingDrops()
     }
 
     /**
@@ -123,6 +125,30 @@ object RarityGlowManager {
         scoreboard.teams
             .filter { it.name.startsWith(TEAM_PREFIX) }
             .forEach { runCatching { it.unregister() } }
+    }
+
+    /**
+     * 启动 / reload 后补扫世界中已存在的掉落物。
+     *
+     * 重启服务器时，掉落物实体会保留 glowing 状态，但 Scoreboard Team entry 不会自动恢复，
+     * 这会导致客户端看到默认黑色描边。这里延迟 1 tick 重新把 Overture 掉落物加入对应 Team。
+     * 只在 load() 后执行一次，不做持续扫描。
+     */
+    private fun rescanExistingDrops() {
+        Bukkit.getScheduler().runTaskLater(bukkitPlugin, Runnable {
+            var count = 0
+            Bukkit.getWorlds().forEach { world ->
+                world.entities.filterIsInstance<Item>().forEach { item ->
+                    val stream = ItemStream(item.itemStack)
+                    if (!stream.isOverture) return@forEach
+                    applyGlow(item)
+                    count++
+                }
+            }
+            if (count > 0) {
+                BlinkLog.info("已重新应用 $count 个已存在掉落物的品质发光")
+            }
+        }, 1L)
     }
 
     /** 当前已注册的品质，供调试使用 */

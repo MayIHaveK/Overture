@@ -1,9 +1,11 @@
 package priv.seventeen.artist.overture.listener
 
 import org.bukkit.event.EventPriority
+import org.bukkit.entity.Item
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.ItemDespawnEvent
 import org.bukkit.event.entity.ItemSpawnEvent
+import org.bukkit.event.world.ChunkLoadEvent
 import priv.seventeen.artist.blink.event.AutoListener
 import priv.seventeen.artist.overture.OvertureConfig
 import priv.seventeen.artist.overture.core.item.ItemStream
@@ -42,5 +44,18 @@ object ItemGlowListener {
         if (event.isCancelled) return
         RarityGlowManager.removeGlow(event.entity)
         DropLabelManager.removeLabel(event.entity)
+    }
+
+    @AutoListener(priority = EventPriority.MONITOR)
+    fun onChunkLoad(event: ChunkLoadEvent) {
+        event.chunk.entities.filterIsInstance<Item>().forEach { item ->
+            val stream = ItemStream(item.itemStack)
+            if (!stream.isOverture) return@forEach
+
+            if (OvertureConfig.instance.rarity.enabled) {
+                RarityGlowManager.applyGlow(item)
+            }
+            DropLabelManager.spawnLabel(item)
+        }
     }
 }

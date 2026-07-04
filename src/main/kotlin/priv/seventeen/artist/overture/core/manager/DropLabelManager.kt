@@ -178,17 +178,28 @@ object DropLabelManager {
             display.javaClass.getMethod("setShadowed", Boolean::class.java).invoke(display, cfg.shadow)
         }
 
-        if (cfg.backgroundEnabled) {
-            runCatching {
-                val (a, r, g, b) = parseArgb(cfg.backgroundArgb)
-                val colorClass = Class.forName("org.bukkit.Color")
-                val color = colorClass
-                    .getMethod("fromARGB", Int::class.java, Int::class.java, Int::class.java, Int::class.java)
-                    .invoke(null, a, r, g, b)
-                display.javaClass.getMethod("setBackgroundColor", colorClass).invoke(display, color)
-            }.onFailure {
-                BlinkLog.warn("TextDisplay background.argb 配置无效: ${cfg.backgroundArgb}")
+        when (cfg.backgroundMode.uppercase()) {
+            "VANILLA" -> {
+                // 保留 Minecraft 默认 TextDisplay 背景，不主动调用 setBackgroundColor
             }
+            "TRANSPARENT" -> applyTextDisplayBackground(display, "0,0,0,0")
+            "CUSTOM" -> applyTextDisplayBackground(display, cfg.backgroundArgb)
+            else -> {
+                BlinkLog.warn("TextDisplay background.mode 配置无效: ${cfg.backgroundMode}，已使用 VANILLA")
+            }
+        }
+    }
+
+    private fun applyTextDisplayBackground(display: Entity, argb: String) {
+        runCatching {
+            val (a, r, g, b) = parseArgb(argb)
+            val colorClass = Class.forName("org.bukkit.Color")
+            val color = colorClass
+                .getMethod("fromARGB", Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                .invoke(null, a, r, g, b)
+            display.javaClass.getMethod("setBackgroundColor", colorClass).invoke(display, color)
+        }.onFailure {
+            BlinkLog.warn("TextDisplay background.argb 配置无效: $argb")
         }
     }
 
@@ -265,7 +276,7 @@ object DropLabelManager {
                 billboard: CENTER
                 shadow: true
                 background:
-                  enabled: false
+                  mode: TRANSPARENT
                   argb: "0,0,0,0"
               armor-stand:
                 small: true
@@ -279,7 +290,7 @@ object DropLabelManager {
                 billboard: CENTER
                 shadow: true
                 background:
-                  enabled: false
+                  mode: TRANSPARENT
                   argb: "0,0,0,0"
               armor-stand:
                 small: true
@@ -317,15 +328,23 @@ data class DropLabelStyle(
 data class TextDisplayStyle(
     val billboard: String = "CENTER",
     val shadow: Boolean = true,
-    val backgroundEnabled: Boolean = false,
+    val backgroundMode: String = "TRANSPARENT",
     val backgroundArgb: String = "0,0,0,0"
 ) {
     companion object {
         fun fromSection(section: ConfigurationSection?): TextDisplayStyle {
+            val backgroundSection = section?.getConfigurationSection("background")
+            val explicitMode = backgroundSection?.getString("mode")
+            val legacyEnabled = backgroundSection?.get("enabled") as? Boolean
+            val mode = explicitMode ?: when (legacyEnabled) {
+                true -> "CUSTOM"
+                false -> "TRANSPARENT"
+                null -> "TRANSPARENT"
+            }
             return TextDisplayStyle(
                 billboard = section?.getString("billboard", "CENTER") ?: "CENTER",
                 shadow = section?.getBoolean("shadow", true) ?: true,
-                backgroundEnabled = section?.getBoolean("background.enabled", false) ?: false,
+                backgroundMode = mode,
                 backgroundArgb = section?.getString("background.argb", "0,0,0,0") ?: "0,0,0,0"
             )
         }
