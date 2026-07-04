@@ -6,6 +6,7 @@ import priv.seventeen.artist.blink.lifecycle.Awake
 import priv.seventeen.artist.blink.lifecycle.LifeCycle
 import priv.seventeen.artist.overture.core.action.AriaRegistry
 import priv.seventeen.artist.overture.core.manager.DisplayManager
+import priv.seventeen.artist.overture.core.manager.DropLabelManager
 import priv.seventeen.artist.overture.core.manager.ItemManager
 import priv.seventeen.artist.overture.core.manager.LoaderManager
 import priv.seventeen.artist.overture.core.manager.RarityGlowManager
@@ -44,6 +45,10 @@ object Overture {
         // 加载品质发光
         RarityGlowManager.load(File(dataFolder, "rarity.yml"))
 
+        // 加载并初始化掉落物名称标签
+        DropLabelManager.load(File(dataFolder, "drop-labels.yml"))
+        DropLabelManager.init()
+
         // 注册默认物品提供者
         ItemManager.registerProvider(YamlItemProvider(dataFolder))
 
@@ -62,6 +67,7 @@ object Overture {
     @Awake(LifeCycle.DISABLE)
     fun onDisable() {
         RarityGlowManager.cleanup()
+        DropLabelManager.cleanup()
         BlinkLog.info("Overture 已禁用")
     }
 

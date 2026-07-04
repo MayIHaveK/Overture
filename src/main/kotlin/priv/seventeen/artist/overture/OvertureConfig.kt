@@ -16,6 +16,9 @@ class OvertureConfig : BlinkConfig(bukkitPlugin, "config") {
     var cooldown: CooldownSection = CooldownSection()
     var rarity: RaritySection = RaritySection()
 
+    @ConfigKey("drop-label")
+    var dropLabel: DropLabelSection = DropLabelSection()
+
     class UpdateSection : BlinkSection() {
         @Comment("玩家加入时检查背包物品更新")
         @ConfigKey("check-on-join")
@@ -58,6 +61,19 @@ class OvertureConfig : BlinkConfig(bukkitPlugin, "config") {
     class RaritySection : BlinkSection() {
         @Comment("是否启用品质发光效果")
         var enabled: Boolean = true
+    }
+
+    class DropLabelSection : BlinkSection() {
+        @Comment("是否启用掉落物名称标签")
+        var enabled: Boolean = true
+
+        @Comment("标签位置同步周期 (tick, 20 tick = 1 秒)，值越小越跟手，值越大性能越好")
+        @ConfigKey("update-interval")
+        var updateInterval: Long = 2L
+
+        @Comment("物品未指定 drop-label 时使用的默认样式 ID，对应 drop-labels.yml")
+        @ConfigKey("default-style")
+        var defaultStyle: String = "default"
     }
 
     companion object {
