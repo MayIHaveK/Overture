@@ -36,7 +36,6 @@ class MetaDrop(
     override fun build(player: Player?, compound: ItemTag, sourceTag: ItemTag, signals: Set<ItemSignal>) {
         if (path.isBlank()) return
         if (!ArcartXHook.enabled) return
-        // drop tag 写入根 NBT，与 ArcartX /ax item setDrop 行为完全一致
         sourceTag["drop"] = ItemTagData.of(path)
     }
 
