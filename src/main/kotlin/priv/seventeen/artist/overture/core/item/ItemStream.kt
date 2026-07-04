@@ -182,9 +182,12 @@ open class ItemStream(val sourceItem: ItemStack) {
         //    此时包含 Bukkit 写入的 display.Name, display.Lore, Enchantments 等
         val freshTag = ItemTag.fromItemStack(sourceItem)
 
-        // 4. 把 overture 节点合并到最新 NBT 上
-        val overtureCompound = sourceTag.getCompound(ItemKey.ROOT)
-        freshTag.putCompound(ItemKey.ROOT, overtureCompound)
+        // 4. 把 sourceTag 中所有根级自定义 tag 合并到最新 NBT 上
+        //    这样既保留 Bukkit 写入的 display 数据，也保留 overture 及其他根级 tag（如 drop）
+        for (key in sourceTag.keys) {
+            val data = sourceTag[key] ?: continue
+            freshTag[key] = data
+        }
 
         // 5. saveTo 写入最终 ItemStack（同时包含 display 和 overture）
         val result = freshTag.saveTo(sourceItem)

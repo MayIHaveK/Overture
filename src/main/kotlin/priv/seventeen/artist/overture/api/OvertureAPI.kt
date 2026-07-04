@@ -2,10 +2,14 @@ package priv.seventeen.artist.overture.api
 
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import priv.seventeen.artist.blink.bukkitPlugin
 import priv.seventeen.artist.overture.core.item.ItemStream
 import priv.seventeen.artist.overture.core.item.ItemSerializer
 import priv.seventeen.artist.overture.core.item.OvertureItem
+import priv.seventeen.artist.overture.core.manager.DropLabelManager
 import priv.seventeen.artist.overture.core.manager.ItemManager
+import priv.seventeen.artist.overture.core.manager.RarityGlowManager
+import java.io.File
 
 /**
  * Overture 公共 API 门面
@@ -65,5 +69,9 @@ object OvertureAPI {
     /**
      * 重载所有配置
      */
-    fun reload() = ItemManager.reload()
+    fun reload() {
+        ItemManager.reload()
+        RarityGlowManager.load(File(bukkitPlugin.dataFolder, "rarity.yml"))
+        DropLabelManager.load(File(bukkitPlugin.dataFolder, "drop-labels.yml"))
+    }
 }

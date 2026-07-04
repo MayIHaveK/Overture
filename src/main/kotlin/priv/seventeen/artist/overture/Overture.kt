@@ -6,8 +6,10 @@ import priv.seventeen.artist.blink.lifecycle.Awake
 import priv.seventeen.artist.blink.lifecycle.LifeCycle
 import priv.seventeen.artist.overture.core.action.AriaRegistry
 import priv.seventeen.artist.overture.core.manager.DisplayManager
+import priv.seventeen.artist.overture.core.manager.DropLabelManager
 import priv.seventeen.artist.overture.core.manager.ItemManager
 import priv.seventeen.artist.overture.core.manager.LoaderManager
+import priv.seventeen.artist.overture.core.manager.RarityGlowManager
 import priv.seventeen.artist.overture.core.manager.YamlItemProvider
 import priv.seventeen.artist.overture.feature.ItemAsyncTick
 import priv.seventeen.artist.overture.feature.ItemDurability
@@ -37,6 +39,16 @@ object Overture {
         OvertureConfig.load()
         applyConfig()
 
+        // 清理上次非正常关闭残留的 Team，仅首次启动需要
+        RarityGlowManager.cleanupStale()
+
+        // 加载品质发光
+        RarityGlowManager.load(File(dataFolder, "rarity.yml"))
+
+        // 加载并初始化掉落物名称标签
+        DropLabelManager.load(File(dataFolder, "drop-labels.yml"))
+        DropLabelManager.init()
+
         // 注册默认物品提供者
         ItemManager.registerProvider(YamlItemProvider(dataFolder))
 
@@ -46,11 +58,16 @@ object Overture {
         // 加载物品
         ItemManager.reload()
 
+        // 检测可选依赖（触发 lazy 初始化，日志在此时打印）
+        priv.seventeen.artist.overture.hook.ArcartXHook.enabled
+
         BlinkLog.success("已加载 §b${ItemManager.getItems().size} §f个物品, §b${DisplayManager.getDisplayCount()} §f个展示方案")
     }
 
     @Awake(LifeCycle.DISABLE)
     fun onDisable() {
+        RarityGlowManager.cleanup()
+        DropLabelManager.cleanup()
         BlinkLog.info("Overture 已禁用")
     }
 
